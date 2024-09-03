@@ -1,11 +1,10 @@
 import Sidebar from './components/sideBarMUI';
+import Login from './auth/login/page'
 
 export default function Home() {
   return (
-    <div style={{ display: 'flex' }}>
-      <Sidebar />
-      <div style={{ paddingLeft: 250, paddingTop: 64, flexGrow: 1 }}>
-      </div>
+    <div>
+      <Login />
     </div>
   );
 }
