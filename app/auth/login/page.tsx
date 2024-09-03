@@ -7,6 +7,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useRouter } from 'next/navigation';
 
 type FormData = {
     email: string;
@@ -14,8 +15,9 @@ type FormData = {
 };
 
 const Login: React.FC = () => {
-    const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
+    const { register, handleSubmit,reset, formState: { errors } } = useForm<FormData>();
     const [loading, setLoading] = React.useState(false);
+    const router = useRouter();
     
     const onSubmit: SubmitHandler<FormData> = async data => {
         setLoading(true);
@@ -24,7 +26,9 @@ const Login: React.FC = () => {
             const response = await axios.post('http://localhost:8000/api/login', data);
             console.log('Login success:', response.data);
             Cookies.set('AUTH', response.data.token, { expires: 1 });
+            router.push('/chat');
             toast.success('Login successful!');
+            reset();
         } catch (error: any) {
             console.error('Login error:', error);
             toast.error(error.response?.data?.error || 'Login failed');
