@@ -4,11 +4,14 @@ import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
+import useIdleLogout from './idleLogout';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+    useIdleLogout(15 * 60 * 1000);
 
     useEffect(() => {
         const checkAuth = () => {
