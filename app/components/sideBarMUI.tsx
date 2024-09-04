@@ -23,6 +23,7 @@ import ThemeToggleButton from './ThemeToggleButton';
 import PaperComponent from './chatScreen';
 import { Button } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import { v4 as uuidv4 } from 'uuid';
 
 const drawerWidth = 240;
 
@@ -78,6 +79,7 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 export default function PersistentDrawerLeft() {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
+  const [chatId, setChatId] = React.useState<string | null>(null);
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -87,6 +89,10 @@ export default function PersistentDrawerLeft() {
     setOpen(false);
   };
 
+  const handleNewChat = () => {
+    const newChatId = uuidv4();
+    setChatId(newChatId);
+  };
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
@@ -133,7 +139,7 @@ export default function PersistentDrawerLeft() {
             color="primary"
             startIcon={<AddIcon />}
             fullWidth
-            // onClick={handleNewChat}
+            onClick={handleNewChat}
           >
             New Chat
           </Button>
@@ -154,7 +160,7 @@ export default function PersistentDrawerLeft() {
       </Drawer>
       <Main open={open}>
         <DrawerHeader />
-        <PaperComponent/>
+        <PaperComponent chatId={chatId}/>
       </Main>
     </Box>
   );

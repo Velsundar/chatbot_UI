@@ -24,7 +24,11 @@ interface Message {
   content: string;
 }
 
-export default function PaperComponent() {
+interface PaperComponentProps {
+  chatId: string | null;
+}
+
+export default function PaperComponent({ chatId }: PaperComponentProps) {
   const [text, setText] = React.useState("");
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [typingMessage, setTypingMessage] = useState("");
@@ -38,7 +42,7 @@ export default function PaperComponent() {
   };
 
   const handleSend = async () => {
-    if (text) {
+    if (text && chatId) {
       const newMessage: Message = { type: "sent", content: text };
       setMessages(prevMessages => [...prevMessages, newMessage]);
       setText("");
@@ -47,7 +51,7 @@ export default function PaperComponent() {
 
       try {
         const response = await axios.post(`${baseURL}/api/chat`, {
-          chatId: "56f0f62b-3969-41d4-80ac-3eb9a723692d",
+          chatId: `${chatId}`,
           prompt: text
         }, {
           headers: {
