@@ -18,12 +18,13 @@ const Login: React.FC = () => {
     const { register, handleSubmit,reset, formState: { errors } } = useForm<FormData>();
     const [loading, setLoading] = React.useState(false);
     const router = useRouter();
+    const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
     
     const onSubmit: SubmitHandler<FormData> = async data => {
         setLoading(true);
 
         try {
-            const response = await axios.post('http://localhost:8000/api/login', data);
+            const response = await axios.post(`${baseURL}/api/login`, data);
             console.log('Login success:', response.data);
             Cookies.set('AUTH', response.data.token, { expires: 1 });
             router.push('/chat');

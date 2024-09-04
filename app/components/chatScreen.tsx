@@ -1,4 +1,3 @@
-// components/PaperComponent.js
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
@@ -14,9 +13,10 @@ import SendIcon from "@mui/icons-material/Send";
 import MicIcon from "@mui/icons-material/Mic";
 import axios from "axios";
 import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm"; // For GitHub Flavored Markdown (tables, task lists, etc.)
-import rehypeRaw from "rehype-raw"; // To allow rendering raw HTML
-
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
+import Cookies from "js-cookie";
+import Styles from "../components/typingDots.module.css"
 type MessageType = "sent" | "received";
 
 interface Message {
@@ -30,6 +30,8 @@ export default function PaperComponent() {
   const [typingMessage, setTypingMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const token = Cookies.get('AUTH');
+  const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setText(event.target.value);
@@ -38,49 +40,39 @@ export default function PaperComponent() {
   const handleSend = async () => {
     if (text) {
       const newMessage: Message = { type: "sent", content: text };
-      setMessages([...messages, newMessage]); // Add the new sent message
+      setMessages(prevMessages => [...prevMessages, newMessage]);
       setText("");
+      setIsTyping(true);
+      setTypingMessage("...");
 
       try {
-        const response = await axios.post("http://localhost:8000/api/chat", {
+        const response = await axios.post(`${baseURL}/api/chat`, {
           chatId: "56f0f62b-3969-41d4-80ac-3eb9a723692d",
           prompt: text
+        }, {
+          headers: {
+            Authorization: token
+          }
         });
         const apiResponse = response.data.text;
         const formattedResponse = formatText(apiResponse);
+        setIsTyping(false);
+        const receivedMessage: Message = {
+          type: "received",
+          content: formattedResponse
+        };
 
-        // Set typing effect
-        setIsTyping(true);
-        setTypingMessage("");
-        const typingDuration = 5; // Adjust typing speed (ms per character)
-        let currentIndex = 0;
+        setMessages(prevMessages => [...prevMessages, receivedMessage]);
 
-        const typingInterval = setInterval(() => {
-          setTypingMessage(formattedResponse.slice(0, currentIndex + 1));
-          currentIndex++;
-          if (currentIndex === formattedResponse.length) {
-            clearInterval(typingInterval);
-            setIsTyping(false);
-            // Add received message after typing effect completes
-            const receivedMessage: Message = {
-              type: "received",
-              content: formattedResponse
-            };
-            setMessages(prevMessages => [
-              ...prevMessages,
-              newMessage,
-              receivedMessage
-            ]);
-          }
-        }, typingDuration);
       } catch (error) {
         console.error("Error fetching data:", error);
+        setIsTyping(false);
       }
     }
   };
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Enter") {
-      event.preventDefault(); // Prevent newline from being added
+      event.preventDefault();
       handleSend();
     }
   };
@@ -129,23 +121,11 @@ export default function PaperComponent() {
     recognition.start();
   };
 
-  useEffect(
-    () => {
-      if (chatContainerRef.current) {
-        chatContainerRef.current.scrollIntoView({ behavior: "smooth" });
-      }
-    },
-    [messages]
-  );
-
-  useEffect(
-    () => {
-      if (chatContainerRef.current) {
-        chatContainerRef.current.scrollIntoView({ behavior: "smooth" });
-      }
-    },
-    [messages]
-  );
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
   return (
     <Paper
@@ -180,7 +160,7 @@ export default function PaperComponent() {
                 borderRadius: 1,
                 bgcolor: message.type === "sent" ? "primary.main" : "grey.300",
                 color: message.type === "sent" ? "white" : "black",
-                wordBreak: "break-word", // Ensure text breaks within the box
+                wordBreak: "break-word",
                 overflowWrap: "break-word"
               }}
             >
@@ -201,15 +181,16 @@ export default function PaperComponent() {
                 padding: 1,
                 borderRadius: 1,
                 bgcolor: "grey.300",
-                color: "black"
+                color: "black",
+                display: "flex",
+                alignItems: "center"
               }}
             >
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeRaw]}
-              >
-                {typingMessage}
-              </ReactMarkdown>
+              <div className={Styles.typingDots}>
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
             </Box>
           </Box>}
         <div ref={chatContainerRef} />
@@ -232,7 +213,7 @@ export default function PaperComponent() {
           placeholder="Enter text here..."
           value={text}
           onChange={handleChange}
-          onKeyDown={handleKeyDown} // Add this line to handle the Enter key
+          onKeyDown={handleKeyDown}
         />
         <IconButton onClick={handleMicClick} sx={{ ml: 1 }}>
           <MicIcon />

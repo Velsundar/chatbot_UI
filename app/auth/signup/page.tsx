@@ -17,13 +17,15 @@ const SignUp: React.FC = () => {
 
     const [loading, setLoading] = React.useState(false);
     const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
+    const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 
     const onSubmit: SubmitHandler<FormData> = async data => {
         setLoading(true);
         setErrorMessage(null);
 
         try {
-            const response = await axios.post('http://localhost:8000/api/register', data);
+            const response = await axios.post(`${baseURL}/api/register`, data);
             console.log('Signup success:', response.data);
             toast.success(response.data.message || "User Registeres");
             reset();
