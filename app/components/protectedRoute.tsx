@@ -19,7 +19,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
             setTimeout(() => {
                 setIsAuthenticated(true);
                 setLoading(false);
-            }, 100);
+            }, 200);
         };
         checkAuth();
     }, [router]);
